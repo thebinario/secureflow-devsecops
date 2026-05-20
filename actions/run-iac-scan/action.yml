@@ -2,6 +2,11 @@ name: "Run IaC Scan"
 description: "Runs Trivy Infrastructure as Code misconfiguration scan and generates SARIF results"
 
 inputs:
+  working_directory:
+    description: "Repository subdirectory to scan"
+    required: false
+    default: "."
+
   scan_path:
     description: "Path to scan for IaC files"
     required: false
@@ -46,7 +51,17 @@ runs:
       run: |
         set -euo pipefail
 
+        WORKDIR="${{ inputs.working_directory }}"
+        TARGET_DIR="$PWD"
+        REPORT_FILE="${{ inputs.report_path }}"
+
+        if [ "$WORKDIR" != "." ]; then
+          TARGET_DIR="$PWD/$WORKDIR"
+          REPORT_FILE="$WORKDIR/${{ inputs.report_path }}"
+        fi
+
         echo "Running Trivy IaC scan..."
+        echo "Working directory: ${WORKDIR}"
         echo "Scan path: ${{ inputs.scan_path }}"
         echo "Skip dirs: ${{ inputs.skip_dirs }}"
         echo "Severity: ${{ inputs.severity }}"
@@ -65,8 +80,10 @@ runs:
           done
         fi
 
+        cd "$TARGET_DIR"
+
         docker run --rm \
-          -v "${PWD}:/src" \
+          -v "${TARGET_DIR}:/src" \
           -w /src \
           aquasec/trivy:latest \
           fs \
@@ -78,4 +95,4 @@ runs:
             "${SKIP_ARGS[@]}" \
             "/src/${{ inputs.scan_path }}"
 
-        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
+        echo "report_file=${REPORT_FILE}" >> "$GITHUB_OUTPUT"

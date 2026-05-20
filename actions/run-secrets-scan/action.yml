@@ -2,6 +2,11 @@ name: "Run Secrets Scan"
 description: "Runs Gitleaks secrets scan and generates SARIF results"
 
 inputs:
+  working_directory:
+    description: "Repository subdirectory to scan"
+    required: false
+    default: "."
+
   report_format:
     description: "Gitleaks report format"
     required: false
@@ -36,7 +41,17 @@ runs:
       run: |
         set -euo pipefail
 
+        WORKDIR="${{ inputs.working_directory }}"
+        TARGET_DIR="$PWD"
+        REPORT_FILE="${{ inputs.report_path }}"
+
+        if [ "$WORKDIR" != "." ]; then
+          TARGET_DIR="$PWD/$WORKDIR"
+          REPORT_FILE="$WORKDIR/${{ inputs.report_path }}"
+        fi
+
         echo "Running Gitleaks secrets scan..."
+        echo "Working directory: ${WORKDIR}"
         echo "Report format: ${{ inputs.report_format }}"
         echo "Report path: ${{ inputs.report_path }}"
         echo "Redact enabled: ${{ inputs.redact }}"
@@ -47,8 +62,10 @@ runs:
           REDACT_FLAG="--redact"
         fi
 
+        cd "$TARGET_DIR"
+
         docker run --rm \
-          -v "${PWD}:/src" \
+          -v "${TARGET_DIR}:/src" \
           -w /src \
           zricethezav/gitleaks:latest \
           detect \
@@ -59,4 +76,4 @@ runs:
             ${REDACT_FLAG} \
             --verbose
 
-        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
+        echo "report_file=${REPORT_FILE}" >> "$GITHUB_OUTPUT"

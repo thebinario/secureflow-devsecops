@@ -9,6 +9,12 @@ on:
         type: string
         default: "critical"
 
+      working_directory:
+        description: "Repository subdirectory to scan"
+        required: false
+        type: string
+        default: "."
+
       enable_sast:
         description: "Enable SAST scan"
         required: false
@@ -197,6 +203,8 @@ jobs:
       - name: Detect project stack
         id: detect
         uses: thebinario/secureflow-devsecops/actions/detect-stack@master
+        with:
+          working_directory: ${{ inputs.working_directory }}
 
       - name: Print detected stack
         shell: bash
@@ -256,6 +264,7 @@ jobs:
         id: sast
         uses: thebinario/secureflow-devsecops/actions/run-sast@master
         with:
+          working_directory: ${{ inputs.working_directory }}
           config: ${{ inputs.semgrep_config }}
           severity: ${{ inputs.semgrep_severity }}
           generate_sarif: "true"
@@ -265,7 +274,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: semgrep-results.sarif
+          sarif_file: ${{ inputs.working_directory == '.' && 'semgrep-results.sarif' || format('{0}/semgrep-results.sarif', inputs.working_directory) }}
           category: semgrep-sast
 
       - name: Set SAST status
@@ -295,6 +304,7 @@ jobs:
         id: secrets
         uses: thebinario/secureflow-devsecops/actions/run-secrets-scan@master
         with:
+          working_directory: ${{ inputs.working_directory }}
           report_format: "sarif"
           report_path: "gitleaks-results.sarif"
           redact: ${{ inputs.gitleaks_redact }}
@@ -304,7 +314,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: gitleaks-results.sarif
+          sarif_file: ${{ inputs.working_directory == '.' && 'gitleaks-results.sarif' || format('{0}/gitleaks-results.sarif', inputs.working_directory) }}
 
   dependency-scan:
     name: Dependency Scan
@@ -324,6 +334,7 @@ jobs:
         id: dependency-scan
         uses: thebinario/secureflow-devsecops/actions/run-dependency-scan@master
         with:
+          working_directory: ${{ inputs.working_directory }}
           severity: ${{ inputs.trivy_dependency_severity }}
           ignore_unfixed: ${{ inputs.trivy_dependency_ignore_unfixed }}
           exit_code: ${{ inputs.trivy_dependency_exit_code }}
@@ -334,7 +345,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: trivy-dependency-results.sarif
+          sarif_file: ${{ inputs.working_directory == '.' && 'trivy-dependency-results.sarif' || format('{0}/trivy-dependency-results.sarif', inputs.working_directory) }}
           category: trivy-dependency
 
   container-scan:
@@ -355,6 +366,7 @@ jobs:
         id: container-scan
         uses: thebinario/secureflow-devsecops/actions/run-container-scan@master
         with:
+          working_directory: ${{ inputs.working_directory }}
           image_name: ${{ inputs.container_image_name }}
           image_tag: ${{ inputs.container_image_tag }}
           dockerfile: ${{ inputs.dockerfile_path }}
@@ -369,7 +381,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: trivy-container-results.sarif
+          sarif_file: ${{ inputs.working_directory == '.' && 'trivy-container-results.sarif' || format('{0}/trivy-container-results.sarif', inputs.working_directory) }}
           category: trivy-container
 
   iac-scan:
@@ -390,6 +402,7 @@ jobs:
         id: iac-scan
         uses: thebinario/secureflow-devsecops/actions/run-iac-scan@master
         with:
+          working_directory: ${{ inputs.working_directory }}
           scan_path: ${{ inputs.iac_scan_path }}
           skip_dirs: ${{ inputs.trivy_iac_skip_dirs }}
           severity: ${{ inputs.trivy_iac_severity }}
@@ -401,7 +414,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: trivy-iac-results.sarif
+          sarif_file: ${{ inputs.working_directory == '.' && 'trivy-iac-results.sarif' || format('{0}/trivy-iac-results.sarif', inputs.working_directory) }}
           category: trivy-iac
   security-status:
     name: Security Status

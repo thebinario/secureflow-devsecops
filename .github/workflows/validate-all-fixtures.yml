@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   validate-node-fixture:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: ./.github/workflows/secure-ci.yml
     with:
       working_directory: examples/fixtures/node-vulnerable-app
       enable_sast: true
@@ -25,7 +25,7 @@ jobs:
       container_image_tag: fixture-${{ github.sha }}
 
   validate-python-fixture:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: ./.github/workflows/secure-ci.yml
     with:
       working_directory: examples/fixtures/python-vulnerable-app
       enable_sast: true
@@ -40,7 +40,7 @@ jobs:
       container_image_tag: fixture-${{ github.sha }}
 
   validate-iac-fixture:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: ./.github/workflows/secure-ci.yml
     with:
       working_directory: examples/fixtures/iac-misconfig
       enable_sast: false

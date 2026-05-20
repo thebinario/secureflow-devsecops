@@ -26,16 +26,8 @@ This repository references community projects for local validation:
 
 ## Validation workflows
 
-The workflows under `examples/fixtures/workflows/` are examples for controlled validation runs.
+The workflows under `examples/fixtures/workflows/` now show how to call SecureFlow with `working_directory` for internal fixture validation.
 
-The current reusable workflow does not support `working_directory`, so scanning internal fixtures directly through `.github/workflows/secure-ci.yml` is still limited.
+Runnable workflow entrypoints live under `.github/workflows/` in this repository and mirror these examples for `workflow_dispatch` testing.
 
-## Future improvement
-
-The main reusable workflow should support `working_directory` to allow scanning internal fixtures directly.
-
-That improvement should:
-
-- add input `working_directory` to `.github/workflows/secure-ci.yml`
-- pass the input through the composite actions
-- allow scanning subpaths such as `examples/fixtures/node-vulnerable-app`
+Those validation workflows are configured so expected findings in the insecure fixtures do not fail the entire run.

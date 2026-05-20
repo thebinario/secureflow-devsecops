@@ -1,4 +1,4 @@
-name: Validate Python Fixture
+name: Validate Node Fixture
 
 on:
   workflow_dispatch:
@@ -9,10 +9,10 @@ permissions:
   actions: read
 
 jobs:
-  validate-python-fixture:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+  validate-node-fixture:
+    uses: ./.github/workflows/secure-ci.yml
     with:
-      working_directory: examples/fixtures/python-vulnerable-app
+      working_directory: examples/fixtures/node-vulnerable-app
       enable_sast: true
       enable_secrets: true
       gitleaks_exit_code: "0"
@@ -21,5 +21,5 @@ jobs:
       enable_container: true
       trivy_container_exit_code: "0"
       enable_iac: false
-      container_image_name: secureflow-python-fixture
+      container_image_name: secureflow-node-fixture
       container_image_tag: fixture-${{ github.sha }}

@@ -2,6 +2,11 @@ name: "Run Dependency Scan"
 description: "Runs Trivy dependency vulnerability scan and generates SARIF results"
 
 inputs:
+  working_directory:
+    description: "Repository subdirectory to scan"
+    required: false
+    default: "."
+
   severity:
     description: "Comma-separated vulnerability severities"
     required: false
@@ -41,7 +46,17 @@ runs:
       run: |
         set -euo pipefail
 
+        WORKDIR="${{ inputs.working_directory }}"
+        TARGET_DIR="$PWD"
+        REPORT_FILE="${{ inputs.report_path }}"
+
+        if [ "$WORKDIR" != "." ]; then
+          TARGET_DIR="$PWD/$WORKDIR"
+          REPORT_FILE="$WORKDIR/${{ inputs.report_path }}"
+        fi
+
         echo "Running Trivy dependency scan..."
+        echo "Working directory: ${WORKDIR}"
         echo "Severity: ${{ inputs.severity }}"
         echo "Ignore unfixed: ${{ inputs.ignore_unfixed }}"
         echo "Report format: ${{ inputs.report_format }}"
@@ -53,8 +68,10 @@ runs:
           IGNORE_UNFIXED_FLAG="--ignore-unfixed"
         fi
 
+        cd "$TARGET_DIR"
+
         docker run --rm \
-          -v "${PWD}:/src" \
+          -v "${TARGET_DIR}:/src" \
           -w /src \
           aquasec/trivy:latest \
           fs \
@@ -66,4 +83,4 @@ runs:
             ${IGNORE_UNFIXED_FLAG} \
             /src
 
-        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
+        echo "report_file=${REPORT_FILE}" >> "$GITHUB_OUTPUT"

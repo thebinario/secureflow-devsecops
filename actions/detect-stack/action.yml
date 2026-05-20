@@ -1,6 +1,12 @@
 name: "Detect Stack"
 description: "Detects language, framework, package manager, Dockerfile, IaC, and tests"
 
+inputs:
+  working_directory:
+    description: "Repository subdirectory to inspect"
+    required: false
+    default: "."
+
 outputs:
   language:
     description: "Detected primary language"
@@ -33,5 +39,6 @@ runs:
       id: detect
       shell: bash
       run: |
+        cd "${{ inputs.working_directory }}"
         chmod +x "${{ github.action_path }}/../../scripts/detect-stack.sh"
         "${{ github.action_path }}/../../scripts/detect-stack.sh"

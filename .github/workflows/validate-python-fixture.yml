@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   validate-python-fixture:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: ./.github/workflows/secure-ci.yml
     with:
       working_directory: examples/fixtures/python-vulnerable-app
       enable_sast: true

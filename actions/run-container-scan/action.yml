@@ -2,6 +2,11 @@ name: "Run Container Scan"
 description: "Builds a Docker image and scans it with Trivy"
 
 inputs:
+  working_directory:
+    description: "Repository subdirectory containing the build context"
+    required: false
+    default: "."
+
   image_name:
     description: "Docker image name"
     required: false
@@ -65,12 +70,21 @@ runs:
       run: |
         set -euo pipefail
 
+        WORKDIR="${{ inputs.working_directory }}"
         IMAGE_REF="${{ inputs.image_name }}:${{ inputs.image_tag }}"
+        TARGET_DIR="$PWD"
+
+        if [ "$WORKDIR" != "." ]; then
+          TARGET_DIR="$PWD/$WORKDIR"
+        fi
 
         echo "Building Docker image..."
+        echo "Working directory: ${WORKDIR}"
         echo "Image: ${IMAGE_REF}"
         echo "Dockerfile: ${{ inputs.dockerfile }}"
         echo "Context: ${{ inputs.context }}"
+
+        cd "$TARGET_DIR"
 
         docker build \
           -f "${{ inputs.dockerfile }}" \
@@ -85,9 +99,18 @@ runs:
       run: |
         set -euo pipefail
 
+        WORKDIR="${{ inputs.working_directory }}"
         IMAGE_REF="${{ steps.build.outputs.image_ref }}"
+        TARGET_DIR="$PWD"
+        REPORT_FILE="${{ inputs.report_path }}"
+
+        if [ "$WORKDIR" != "." ]; then
+          TARGET_DIR="$PWD/$WORKDIR"
+          REPORT_FILE="$WORKDIR/${{ inputs.report_path }}"
+        fi
 
         echo "Running Trivy container scan..."
+        echo "Working directory: ${WORKDIR}"
         echo "Image: ${IMAGE_REF}"
         echo "Severity: ${{ inputs.severity }}"
         echo "Ignore unfixed: ${{ inputs.ignore_unfixed }}"
@@ -99,9 +122,11 @@ runs:
           IGNORE_UNFIXED_FLAG="--ignore-unfixed"
         fi
 
+        cd "$TARGET_DIR"
+
         docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
-          -v "${PWD}:/src" \
+          -v "${TARGET_DIR}:/src" \
           -w /src \
           aquasec/trivy:latest \
           image \
@@ -113,4 +138,4 @@ runs:
             ${IGNORE_UNFIXED_FLAG} \
             "${IMAGE_REF}"
 
-        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
+        echo "report_file=${REPORT_FILE}" >> "$GITHUB_OUTPUT"

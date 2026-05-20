@@ -2,6 +2,11 @@ name: "Run SAST"
 description: "Runs Semgrep SAST scan and generates SARIF results"
 
 inputs:
+  working_directory:
+    description: "Repository subdirectory to scan"
+    required: false
+    default: "."
+
   config:
     description: "Semgrep rules config"
     required: false
@@ -36,12 +41,24 @@ runs:
       run: |
         set -euo pipefail
 
+        WORKDIR="${{ inputs.working_directory }}"
+        TARGET_DIR="$PWD"
+        REPORT_FILE="${{ inputs.sarif_output }}"
+
+        if [ "$WORKDIR" != "." ]; then
+          TARGET_DIR="$PWD/$WORKDIR"
+          REPORT_FILE="$WORKDIR/${{ inputs.sarif_output }}"
+        fi
+
         echo "Running Semgrep SAST..."
+        echo "Working directory: ${WORKDIR}"
         echo "Config: ${{ inputs.config }}"
         echo "Severity gate: ${{ inputs.severity }}"
 
+        cd "$TARGET_DIR"
+
         docker run --rm \
-          -v "${PWD}:/src" \
+          -v "${TARGET_DIR}:/src" \
           -w /src \
           semgrep/semgrep:latest \
           semgrep scan \
@@ -50,4 +67,4 @@ runs:
             --sarif \
             --output="${{ inputs.sarif_output }}"
 
-        echo "sarif_file=${{ inputs.sarif_output }}" >> "$GITHUB_OUTPUT"
+        echo "sarif_file=${REPORT_FILE}" >> "$GITHUB_OUTPUT"
