@@ -140,3 +140,50 @@ The summary includes:
 - Security gate configuration
 
 The summary is written using `GITHUB_STEP_SUMMARY`.
+
+## Examples
+
+SecureFlow provides example workflows for common stacks.
+
+### Node.js
+
+Use this example for Node.js, Express, NestJS, React or Next.js projects:
+
+```text
+examples/node/secureflow-ci.yml
+```
+
+### Python
+
+Use this example for FastAPI, Flask, Django or Python service projects:
+
+```text
+examples/python/secureflow-ci.yml
+```
+
+## Minimal usage
+
+```yaml
+name: SecureFlow CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  secure-ci:
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    with:
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: true
+```
