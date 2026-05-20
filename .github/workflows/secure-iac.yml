@@ -1,0 +1,24 @@
+name: SecureFlow IaC Scan
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  secure-iac:
+    uses: ./.github/workflows/secure-ci.yml
+    with:
+      enable_sast: false
+      enable_secrets: false
+      enable_dependencies: false
+      enable_container: false
+      enable_iac: true
+      iac_scan_path: .

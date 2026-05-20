@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: read
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   secureflow:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
     with:
       enable_sast: false
       enable_secrets: false

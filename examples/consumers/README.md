@@ -11,7 +11,7 @@ Each workflow should be saved in the target repository as:
 All examples consume the reusable workflow below and do not duplicate scanner logic:
 
 ```text
-thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
 ```
 
 Choose the closest stack folder and copy the workflow variant that matches the target repository.
