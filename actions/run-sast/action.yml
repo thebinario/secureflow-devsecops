@@ -1,0 +1,53 @@
+name: "Run SAST"
+description: "Runs Semgrep SAST scan and generates SARIF results"
+
+inputs:
+  config:
+    description: "Semgrep rules config"
+    required: false
+    default: "p/owasp-top-ten"
+
+  severity:
+    description: "Minimum severity to fail the scan"
+    required: false
+    default: "ERROR"
+
+  generate_sarif:
+    description: "Generate SARIF report"
+    required: false
+    default: "true"
+
+  sarif_output:
+    description: "SARIF output path"
+    required: false
+    default: "semgrep-results.sarif"
+
+outputs:
+  sarif_file:
+    description: "Generated SARIF file path"
+    value: ${{ steps.semgrep.outputs.sarif_file }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Semgrep SAST
+      id: semgrep
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        echo "Running Semgrep SAST..."
+        echo "Config: ${{ inputs.config }}"
+        echo "Severity gate: ${{ inputs.severity }}"
+
+        docker run --rm \
+          -v "${PWD}:/src" \
+          -w /src \
+          semgrep/semgrep:latest \
+          semgrep scan \
+            --config="${{ inputs.config }}" \
+            --severity="${{ inputs.severity }}" \
+            --sarif \
+            --output="${{ inputs.sarif_output }}"
+
+        echo "sarif_file=${{ inputs.sarif_output }}" >> "$GITHUB_OUTPUT"
