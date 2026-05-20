@@ -20,4 +20,11 @@ Use this fixture to validate SecureFlow locally in this repository:
 
 ## Community lab note
 
-This task keeps the .NET validation scope inside the repository fixture so the workflow stays reproducible and controlled.
+For community lab reference, evaluate intentionally vulnerable .NET apps only in isolated local environments.
+
+Examples:
+
+- OWASP VulnerableApp4APISecurity
+- AspGoat
+
+This repository keeps the automated validation scope inside the local fixture so the workflow stays reproducible and controlled.

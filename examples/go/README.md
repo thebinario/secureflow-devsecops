@@ -20,4 +20,10 @@ Use this fixture to validate SecureFlow locally in this repository:
 
 ## Community lab note
 
-This task keeps the Go validation scope inside the repository fixture so the workflow stays reproducible and controlled.
+For community lab reference, evaluate intentionally vulnerable Go apps only in isolated local environments.
+
+Example:
+
+- GOwasp
+
+This repository keeps the automated validation scope inside the local fixture so the workflow stays reproducible and controlled.
