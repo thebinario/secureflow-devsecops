@@ -1,0 +1,69 @@
+name: "Run Dependency Scan"
+description: "Runs Trivy dependency vulnerability scan and generates SARIF results"
+
+inputs:
+  severity:
+    description: "Comma-separated vulnerability severities"
+    required: false
+    default: "CRITICAL,HIGH"
+
+  ignore_unfixed:
+    description: "Ignore vulnerabilities without fixed versions"
+    required: false
+    default: "true"
+
+  exit_code:
+    description: "Exit code when vulnerabilities are found"
+    required: false
+    default: "1"
+
+  report_format:
+    description: "Trivy report format"
+    required: false
+    default: "sarif"
+
+  report_path:
+    description: "Trivy report output path"
+    required: false
+    default: "trivy-dependency-results.sarif"
+
+outputs:
+  report_file:
+    description: "Generated Trivy report path"
+    value: ${{ steps.trivy.outputs.report_file }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Trivy dependency scan
+      id: trivy
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        echo "Running Trivy dependency scan..."
+        echo "Severity: ${{ inputs.severity }}"
+        echo "Ignore unfixed: ${{ inputs.ignore_unfixed }}"
+        echo "Report format: ${{ inputs.report_format }}"
+        echo "Report path: ${{ inputs.report_path }}"
+
+        IGNORE_UNFIXED_FLAG=""
+
+        if [ "${{ inputs.ignore_unfixed }}" = "true" ]; then
+          IGNORE_UNFIXED_FLAG="--ignore-unfixed"
+        fi
+
+        docker run --rm \
+          -v "${PWD}:/src" \
+          -w /src \
+          aquasec/trivy:latest \
+          fs \
+            --scanners vuln \
+            --severity "${{ inputs.severity }}" \
+            --exit-code "${{ inputs.exit_code }}" \
+            --format "${{ inputs.report_format }}" \
+            --output "${{ inputs.report_path }}" \
+            ${IGNORE_UNFIXED_FLAG} \
+            /src
+
+        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
