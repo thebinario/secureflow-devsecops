@@ -1,0 +1,22 @@
+name: Validate Go Fixture
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  validate-go-fixture:
+    uses: ./.github/workflows/secure-ci.yml
+    with:
+      working_directory: examples/fixtures/go-vulnerable-app
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-go-fixture
+      container_image_tag: fixture-${{ github.sha }}

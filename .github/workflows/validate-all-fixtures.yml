@@ -33,6 +33,54 @@ jobs:
       container_image_name: secureflow-python-fixture
       container_image_tag: fixture-${{ github.sha }}
 
+  validate-java-maven-fixture:
+    uses: ./.github/workflows/secure-ci.yml
+    with:
+      working_directory: examples/fixtures/java-maven-vulnerable-app
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-java-maven-fixture
+      container_image_tag: fixture-${{ github.sha }}
+
+  validate-java-gradle-fixture:
+    uses: ./.github/workflows/secure-ci.yml
+    with:
+      working_directory: examples/fixtures/java-gradle-vulnerable-app
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-java-gradle-fixture
+      container_image_tag: fixture-${{ github.sha }}
+
+  validate-dotnet-fixture:
+    uses: ./.github/workflows/secure-ci.yml
+    with:
+      working_directory: examples/fixtures/dotnet-vulnerable-app
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-dotnet-fixture
+      container_image_tag: fixture-${{ github.sha }}
+
+  validate-go-fixture:
+    uses: ./.github/workflows/secure-ci.yml
+    with:
+      working_directory: examples/fixtures/go-vulnerable-app
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-go-fixture
+      container_image_tag: fixture-${{ github.sha }}
+
   validate-iac-fixture:
     uses: ./.github/workflows/secure-ci.yml
     with:

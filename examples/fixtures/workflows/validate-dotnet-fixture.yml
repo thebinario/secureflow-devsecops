@@ -1,0 +1,22 @@
+name: Validate .NET Fixture
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  validate-dotnet-fixture:
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    with:
+      working_directory: examples/fixtures/dotnet-vulnerable-app
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-dotnet-fixture
+      container_image_tag: fixture-${{ github.sha }}

@@ -13,6 +13,10 @@ Do not use real credentials.
 
 - node-vulnerable-app
 - python-vulnerable-app
+- java-maven-vulnerable-app
+- java-gradle-vulnerable-app
+- dotnet-vulnerable-app
+- go-vulnerable-app
 - iac-misconfig
 - docker-compose.vulnerable-labs.yml
 

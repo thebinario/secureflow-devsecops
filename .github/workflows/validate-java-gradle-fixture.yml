@@ -1,0 +1,22 @@
+name: Validate Java Gradle Fixture
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  validate-java-gradle-fixture:
+    uses: ./.github/workflows/secure-ci.yml
+    with:
+      working_directory: examples/fixtures/java-gradle-vulnerable-app
+      enable_sast: true
+      enable_secrets: true
+      enable_dependencies: true
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-java-gradle-fixture
+      container_image_tag: fixture-${{ github.sha }}
