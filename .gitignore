@@ -1,0 +1,68 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+build/
+coverage/
+.next/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+
+# Java / Maven / Gradle
+target/
+.gradle/
+*.class
+
+# .NET
+bin/
+obj/
+TestResults/
+
+# Go
+*.test
+coverage.out
+
+# Terraform / IaC
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.tfvars
+crash.log
+crash.*.log
+
+# Security reports
+reports/
+*.sarif
+semgrep-results.json
+trivy-results.json
+gitleaks-report.json
+scorecard-results.json
+
+# Docker
+docker-compose.override.yml
+*.tar
+.cache/
