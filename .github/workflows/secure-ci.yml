@@ -123,6 +123,24 @@ on:
         type: string
         default: "1"
 
+      iac_scan_path:
+        description: "Path to scan for IaC files"
+        required: false
+        type: string
+        default: "."
+
+      trivy_iac_severity:
+        description: "Trivy IaC scan severity filter"
+        required: false
+        type: string
+        default: "CRITICAL,HIGH"
+
+      trivy_iac_exit_code:
+        description: "Exit code when Trivy finds IaC misconfigurations"
+        required: false
+        type: string
+        default: "1"
+
     outputs:
       language:
         description: "Detected primary language"
@@ -337,14 +355,33 @@ jobs:
           sarif_file: trivy-container-results.sarif
           category: trivy-container
 
-  iac-placeholder:
-    name: IaC Scan Placeholder
+  iac-scan:
+    name: IaC Scan
     runs-on: ubuntu-latest
     needs: detect-stack
     if: ${{ inputs.enable_iac && needs.detect-stack.outputs.has_iac == 'true' }}
 
+    permissions:
+      contents: read
+      security-events: write
+
     steps:
-      - name: IaC scan placeholder
-        shell: bash
-        run: |
-          echo "IaC scanning will be implemented in a future task."
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+
+      - name: Run IaC scan with Trivy
+        id: iac-scan
+        uses: thebinario/secureflow-devsecops/actions/run-iac-scan@main
+        with:
+          scan_path: ${{ inputs.iac_scan_path }}
+          severity: ${{ inputs.trivy_iac_severity }}
+          exit_code: ${{ inputs.trivy_iac_exit_code }}
+          report_format: "sarif"
+          report_path: "trivy-iac-results.sarif"
+
+      - name: Upload Trivy IaC SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-iac-results.sarif
+          category: trivy-iac

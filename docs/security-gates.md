@@ -89,3 +89,37 @@ jobs:
       trivy_container_ignore_unfixed: "true"
       trivy_container_exit_code: "1"
 ```
+
+## IaC scanning
+
+IaC scanning is powered by Trivy.
+
+The IaC scan checks infrastructure files for security misconfigurations.
+
+Supported examples:
+
+- Terraform files
+- CloudFormation templates
+- Serverless files
+- Kubernetes manifests
+
+Default behavior:
+
+```text
+severity: CRITICAL,HIGH
+exit_code: 1
+report_format: sarif
+```
+
+Example:
+
+```yaml
+jobs:
+  secure-ci:
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    with:
+      enable_iac: true
+      iac_scan_path: "."
+      trivy_iac_severity: "CRITICAL,HIGH"
+      trivy_iac_exit_code: "1"
+```

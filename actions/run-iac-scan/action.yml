@@ -1,0 +1,62 @@
+name: "Run IaC Scan"
+description: "Runs Trivy Infrastructure as Code misconfiguration scan and generates SARIF results"
+
+inputs:
+  scan_path:
+    description: "Path to scan for IaC files"
+    required: false
+    default: "."
+
+  severity:
+    description: "Comma-separated misconfiguration severities"
+    required: false
+    default: "CRITICAL,HIGH"
+
+  exit_code:
+    description: "Exit code when misconfigurations are found"
+    required: false
+    default: "1"
+
+  report_format:
+    description: "Trivy report format"
+    required: false
+    default: "sarif"
+
+  report_path:
+    description: "Trivy report output path"
+    required: false
+    default: "trivy-iac-results.sarif"
+
+outputs:
+  report_file:
+    description: "Generated Trivy IaC report path"
+    value: ${{ steps.trivy.outputs.report_file }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Trivy IaC scan
+      id: trivy
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        echo "Running Trivy IaC scan..."
+        echo "Scan path: ${{ inputs.scan_path }}"
+        echo "Severity: ${{ inputs.severity }}"
+        echo "Report format: ${{ inputs.report_format }}"
+        echo "Report path: ${{ inputs.report_path }}"
+
+        docker run --rm \
+          -v "${PWD}:/src" \
+          -w /src \
+          aquasec/trivy:latest \
+          fs \
+            --scanners misconfig \
+            --severity "${{ inputs.severity }}" \
+            --exit-code "${{ inputs.exit_code }}" \
+            --format "${{ inputs.report_format }}" \
+            --output "${{ inputs.report_path }}" \
+            "/src/${{ inputs.scan_path }}"
+
+        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
