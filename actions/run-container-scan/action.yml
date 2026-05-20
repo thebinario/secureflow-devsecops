@@ -1,0 +1,116 @@
+name: "Run Container Scan"
+description: "Builds a Docker image and scans it with Trivy"
+
+inputs:
+  image_name:
+    description: "Docker image name"
+    required: false
+    default: "secureflow-target"
+
+  image_tag:
+    description: "Docker image tag"
+    required: false
+    default: "local"
+
+  dockerfile:
+    description: "Path to Dockerfile"
+    required: false
+    default: "Dockerfile"
+
+  context:
+    description: "Docker build context"
+    required: false
+    default: "."
+
+  severity:
+    description: "Comma-separated vulnerability severities"
+    required: false
+    default: "CRITICAL,HIGH"
+
+  ignore_unfixed:
+    description: "Ignore vulnerabilities without fixed versions"
+    required: false
+    default: "true"
+
+  exit_code:
+    description: "Exit code when vulnerabilities are found"
+    required: false
+    default: "1"
+
+  report_format:
+    description: "Trivy report format"
+    required: false
+    default: "sarif"
+
+  report_path:
+    description: "Trivy report output path"
+    required: false
+    default: "trivy-container-results.sarif"
+
+outputs:
+  image_ref:
+    description: "Built Docker image reference"
+    value: ${{ steps.build.outputs.image_ref }}
+
+  report_file:
+    description: "Generated Trivy report path"
+    value: ${{ steps.scan.outputs.report_file }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build Docker image
+      id: build
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        IMAGE_REF="${{ inputs.image_name }}:${{ inputs.image_tag }}"
+
+        echo "Building Docker image..."
+        echo "Image: ${IMAGE_REF}"
+        echo "Dockerfile: ${{ inputs.dockerfile }}"
+        echo "Context: ${{ inputs.context }}"
+
+        docker build \
+          -f "${{ inputs.dockerfile }}" \
+          -t "${IMAGE_REF}" \
+          "${{ inputs.context }}"
+
+        echo "image_ref=${IMAGE_REF}" >> "$GITHUB_OUTPUT"
+
+    - name: Run Trivy container scan
+      id: scan
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        IMAGE_REF="${{ steps.build.outputs.image_ref }}"
+
+        echo "Running Trivy container scan..."
+        echo "Image: ${IMAGE_REF}"
+        echo "Severity: ${{ inputs.severity }}"
+        echo "Ignore unfixed: ${{ inputs.ignore_unfixed }}"
+        echo "Report path: ${{ inputs.report_path }}"
+
+        IGNORE_UNFIXED_FLAG=""
+
+        if [ "${{ inputs.ignore_unfixed }}" = "true" ]; then
+          IGNORE_UNFIXED_FLAG="--ignore-unfixed"
+        fi
+
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "${PWD}:/src" \
+          -w /src \
+          aquasec/trivy:latest \
+          image \
+            --scanners vuln \
+            --severity "${{ inputs.severity }}" \
+            --exit-code "${{ inputs.exit_code }}" \
+            --format "${{ inputs.report_format }}" \
+            --output "${{ inputs.report_path }}" \
+            ${IGNORE_UNFIXED_FLAG} \
+            "${IMAGE_REF}"
+
+        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
