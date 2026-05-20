@@ -1,0 +1,62 @@
+name: "Run Secrets Scan"
+description: "Runs Gitleaks secrets scan and generates SARIF results"
+
+inputs:
+  report_format:
+    description: "Gitleaks report format"
+    required: false
+    default: "sarif"
+
+  report_path:
+    description: "Gitleaks report output path"
+    required: false
+    default: "gitleaks-results.sarif"
+
+  redact:
+    description: "Redact secret values from output"
+    required: false
+    default: "true"
+
+  exit_code:
+    description: "Exit code when leaks are found"
+    required: false
+    default: "1"
+
+outputs:
+  report_file:
+    description: "Generated Gitleaks report path"
+    value: ${{ steps.gitleaks.outputs.report_file }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Gitleaks secrets scan
+      id: gitleaks
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        echo "Running Gitleaks secrets scan..."
+        echo "Report format: ${{ inputs.report_format }}"
+        echo "Report path: ${{ inputs.report_path }}"
+        echo "Redact enabled: ${{ inputs.redact }}"
+
+        REDACT_FLAG=""
+
+        if [ "${{ inputs.redact }}" = "true" ]; then
+          REDACT_FLAG="--redact"
+        fi
+
+        docker run --rm \
+          -v "${PWD}:/src" \
+          -w /src \
+          zricethezav/gitleaks:latest \
+          detect \
+            --source="/src" \
+            --report-format="${{ inputs.report_format }}" \
+            --report-path="${{ inputs.report_path }}" \
+            --exit-code="${{ inputs.exit_code }}" \
+            ${REDACT_FLAG} \
+            --verbose
+
+        echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"
