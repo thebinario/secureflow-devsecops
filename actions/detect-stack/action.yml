@@ -1,0 +1,37 @@
+name: "Detect Stack"
+description: "Detects language, framework, package manager, Dockerfile, IaC, and tests"
+
+outputs:
+  language:
+    description: "Detected primary language"
+    value: ${{ steps.detect.outputs.language }}
+
+  package_manager:
+    description: "Detected package manager"
+    value: ${{ steps.detect.outputs.package_manager }}
+
+  framework:
+    description: "Detected framework"
+    value: ${{ steps.detect.outputs.framework }}
+
+  has_dockerfile:
+    description: "Whether the repository has a Dockerfile"
+    value: ${{ steps.detect.outputs.has_dockerfile }}
+
+  has_iac:
+    description: "Whether the repository has Infrastructure as Code files"
+    value: ${{ steps.detect.outputs.has_iac }}
+
+  has_tests:
+    description: "Whether the repository has test files or test folders"
+    value: ${{ steps.detect.outputs.has_tests }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run stack detection
+      id: detect
+      shell: bash
+      run: |
+        chmod +x "${{ github.action_path }}/../../scripts/detect-stack.sh"
+        "${{ github.action_path }}/../../scripts/detect-stack.sh"

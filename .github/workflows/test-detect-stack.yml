@@ -1,0 +1,32 @@
+name: Test Detect Stack
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect stack
+        id: detect
+        uses: ./actions/detect-stack
+
+      - name: Show detection result
+        run: |
+          echo "Language: ${{ steps.detect.outputs.language }}"
+          echo "Package manager: ${{ steps.detect.outputs.package_manager }}"
+          echo "Framework: ${{ steps.detect.outputs.framework }}"
+          echo "Has Dockerfile: ${{ steps.detect.outputs.has_dockerfile }}"
+          echo "Has IaC: ${{ steps.detect.outputs.has_iac }}"
+          echo "Has tests: ${{ steps.detect.outputs.has_tests }}"
