@@ -1,0 +1,24 @@
+version: "3.9"
+
+# These services are intentionally vulnerable. Do not expose them to the internet.
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: secureflow-juice-shop
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+
+  webgoat:
+    image: webgoat/webgoat-8.0:latest
+    container_name: secureflow-webgoat
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    container_name: secureflow-dvwa
+    ports:
+      - "127.0.0.1:8081:80"
+    restart: unless-stopped

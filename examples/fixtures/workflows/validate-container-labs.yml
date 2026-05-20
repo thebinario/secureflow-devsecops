@@ -1,0 +1,69 @@
+name: Validate Community Container Labs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  validate-container-labs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Safety notice
+        run: |
+          echo "These community images are intentionally vulnerable."
+          echo "This workflow scans images only and does not deploy or publish them."
+
+      - name: Pull vulnerable lab images
+        run: |
+          docker pull bkimminich/juice-shop:latest
+          docker pull webgoat/webgoat-8.0:latest
+          docker pull vulnerables/web-dvwa:latest
+
+      - name: Scan Juice Shop image
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${PWD}:/workspace" \
+            -w /workspace \
+            aquasec/trivy:latest \
+            image \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --format sarif \
+              --output juice-shop-trivy.sarif \
+              bkimminich/juice-shop:latest
+
+      - name: Scan WebGoat image
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${PWD}:/workspace" \
+            -w /workspace \
+            aquasec/trivy:latest \
+            image \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --format sarif \
+              --output webgoat-trivy.sarif \
+              webgoat/webgoat-8.0:latest
+
+      - name: Scan DVWA image
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${PWD}:/workspace" \
+            -w /workspace \
+            aquasec/trivy:latest \
+            image \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --format sarif \
+              --output dvwa-trivy.sarif \
+              vulnerables/web-dvwa:latest

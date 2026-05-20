@@ -1,0 +1,15 @@
+{
+  "name": "secureflow-node-vulnerable-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Intentionally insecure local fixture for validating SecureFlow scanners.",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "express": "4.18.2",
+    "lodash": "4.17.20",
+    "minimist": "0.0.8"
+  }
+}

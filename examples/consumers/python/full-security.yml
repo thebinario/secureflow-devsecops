@@ -1,0 +1,40 @@
+name: SecureFlow CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  secureflow:
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    with:
+      fail_on_severity: critical
+      enable_sast: true
+      semgrep_config: p/owasp-top-ten
+      semgrep_severity: ERROR
+      enable_secrets: true
+      gitleaks_redact: "true"
+      gitleaks_exit_code: "1"
+      enable_dependencies: true
+      trivy_dependency_severity: CRITICAL,HIGH
+      trivy_dependency_ignore_unfixed: "true"
+      trivy_dependency_exit_code: "1"
+      enable_container: true
+      container_image_name: python-app
+      container_image_tag: ci-${{ github.sha }}
+      dockerfile_path: Dockerfile
+      docker_build_context: .
+      trivy_container_severity: CRITICAL,HIGH
+      trivy_container_ignore_unfixed: "true"
+      trivy_container_exit_code: "1"
+      enable_iac: true
+      iac_scan_path: .
+      trivy_iac_severity: CRITICAL,HIGH
+      trivy_iac_exit_code: "1"

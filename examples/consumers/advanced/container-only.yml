@@ -1,0 +1,26 @@
+name: SecureFlow CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  secureflow:
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    with:
+      enable_sast: false
+      enable_secrets: false
+      enable_dependencies: false
+      enable_container: true
+      enable_iac: false
+      container_image_name: secureflow-target
+      container_image_tag: ci-${{ github.sha }}
+      dockerfile_path: Dockerfile
+      docker_build_context: .

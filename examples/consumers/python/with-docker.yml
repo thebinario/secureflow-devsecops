@@ -1,12 +1,3 @@
-# Getting Started
-
-SecureFlow DevSecOps provides reusable GitHub Actions workflows and composite actions for secure CI pipelines.
-
-## Usage
-
-Create the following workflow in the repository that wants to consume SecureFlow:
-
-```yaml
 name: SecureFlow CI
 
 on:
@@ -21,12 +12,15 @@ permissions:
   actions: read
 
 jobs:
-  secure-ci:
+  secureflow:
     uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
     with:
-      fail_on_severity: critical
       enable_sast: true
       enable_secrets: true
       enable_dependencies: true
       enable_container: true
-      enable_iac: true
+      enable_iac: false
+      container_image_name: python-app
+      container_image_tag: ci-${{ github.sha }}
+      dockerfile_path: Dockerfile
+      docker_build_context: .

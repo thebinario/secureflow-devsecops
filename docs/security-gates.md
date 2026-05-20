@@ -50,7 +50,7 @@ Example:
 ```yaml
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
     with:
       enable_dependencies: true
       trivy_dependency_severity: "CRITICAL,HIGH"
@@ -78,7 +78,7 @@ Example:
 ```yaml
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
     with:
       enable_container: true
       container_image_name: "my-api"
@@ -116,7 +116,7 @@ Example:
 ```yaml
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
     with:
       enable_iac: true
       iac_scan_path: "."
@@ -150,7 +150,7 @@ SecureFlow provides example workflows for common stacks.
 Use this example for Node.js, Express, NestJS, React or Next.js projects:
 
 ```text
-examples/node/secureflow-ci.yml
+examples/consumers/node/full-security.yml
 ```
 
 ### Python
@@ -158,7 +158,7 @@ examples/node/secureflow-ci.yml
 Use this example for FastAPI, Flask, Django or Python service projects:
 
 ```text
-examples/python/secureflow-ci.yml
+examples/consumers/python/full-security.yml
 ```
 
 ## Minimal usage
@@ -170,7 +170,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 
 permissions:
   contents: read
@@ -179,7 +179,7 @@ permissions:
 
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
     with:
       enable_sast: true
       enable_secrets: true

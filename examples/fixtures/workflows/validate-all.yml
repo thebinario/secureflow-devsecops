@@ -1,0 +1,161 @@
+name: Validate All Fixtures
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  validate-fixtures-directly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Explain validation strategy
+        run: |
+          echo "Reusable SecureFlow scanning of internal fixtures is still limited by missing working_directory support."
+          echo "This aggregator validates fixtures directly with the same scanner classes used by SecureFlow."
+
+      - name: Run Semgrep against node fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            semgrep/semgrep:latest \
+            semgrep scan \
+              --config="p/owasp-top-ten" \
+              --severity="ERROR" \
+              examples/fixtures/node-vulnerable-app
+
+      - name: Run Gitleaks against node fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            zricethezav/gitleaks:latest \
+            detect \
+              --source="examples/fixtures/node-vulnerable-app" \
+              --redact \
+              --exit-code=1
+
+      - name: Run Trivy dependency scan against node fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            aquasec/trivy:latest \
+            fs \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --ignore-unfixed \
+              --exit-code 1 \
+              /src/examples/fixtures/node-vulnerable-app
+
+      - name: Build node fixture image
+        run: |
+          docker build \
+            -f examples/fixtures/node-vulnerable-app/Dockerfile \
+            -t secureflow-node-fixture:local \
+            examples/fixtures/node-vulnerable-app
+
+      - name: Run Trivy container scan against node fixture
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest \
+            image \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --ignore-unfixed \
+              --exit-code 1 \
+              secureflow-node-fixture:local
+
+      - name: Run Semgrep against python fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            semgrep/semgrep:latest \
+            semgrep scan \
+              --config="p/owasp-top-ten" \
+              --severity="ERROR" \
+              examples/fixtures/python-vulnerable-app
+
+      - name: Run Gitleaks against python fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            zricethezav/gitleaks:latest \
+            detect \
+              --source="examples/fixtures/python-vulnerable-app" \
+              --redact \
+              --exit-code=1
+
+      - name: Run Trivy dependency scan against python fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            aquasec/trivy:latest \
+            fs \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --ignore-unfixed \
+              --exit-code 1 \
+              /src/examples/fixtures/python-vulnerable-app
+
+      - name: Build python fixture image
+        run: |
+          docker build \
+            -f examples/fixtures/python-vulnerable-app/Dockerfile \
+            -t secureflow-python-fixture:local \
+            examples/fixtures/python-vulnerable-app
+
+      - name: Run Trivy container scan against python fixture
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest \
+            image \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --ignore-unfixed \
+              --exit-code 1 \
+              secureflow-python-fixture:local
+
+      - name: Run Trivy IaC scan against fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            aquasec/trivy:latest \
+            fs \
+              --scanners misconfig \
+              --severity "CRITICAL,HIGH" \
+              --exit-code 1 \
+              --format sarif \
+              --output iac-fixture-trivy.sarif \
+              /src/examples/fixtures/iac-misconfig
+
+      - name: Pull vulnerable lab images
+        run: |
+          docker pull bkimminich/juice-shop:latest
+          docker pull webgoat/webgoat-8.0:latest
+          docker pull vulnerables/web-dvwa:latest
+
+      - name: Scan community vulnerable images
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --severity "CRITICAL,HIGH" bkimminich/juice-shop:latest
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --severity "CRITICAL,HIGH" webgoat/webgoat-8.0:latest
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --severity "CRITICAL,HIGH" vulnerables/web-dvwa:latest

@@ -1,0 +1,85 @@
+name: Validate Node Fixture
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  limitation-note:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain current limitation
+        run: |
+          echo "SecureFlow reusable workflow currently scans repository root only."
+          echo "Fixture path: examples/fixtures/node-vulnerable-app"
+          echo "Future improvement: add working_directory to secure-ci.yml."
+
+  validate-node-fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep against node fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            semgrep/semgrep:latest \
+            semgrep scan \
+              --config="p/owasp-top-ten" \
+              --severity="ERROR" \
+              --sarif \
+              --output="node-fixture-semgrep.sarif" \
+              examples/fixtures/node-vulnerable-app
+
+      - name: Run Gitleaks against node fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            zricethezav/gitleaks:latest \
+            detect \
+              --source="examples/fixtures/node-vulnerable-app" \
+              --report-format="sarif" \
+              --report-path="node-fixture-gitleaks.sarif" \
+              --redact \
+              --exit-code=1
+
+      - name: Run Trivy dependency scan against node fixture
+        run: |
+          docker run --rm \
+            -v "${PWD}:/src" \
+            -w /src \
+            aquasec/trivy:latest \
+            fs \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --ignore-unfixed \
+              --exit-code 1 \
+              --format sarif \
+              --output node-fixture-trivy-deps.sarif \
+              /src/examples/fixtures/node-vulnerable-app
+
+      - name: Build node fixture image
+        run: |
+          docker build \
+            -f examples/fixtures/node-vulnerable-app/Dockerfile \
+            -t secureflow-node-fixture:local \
+            examples/fixtures/node-vulnerable-app
+
+      - name: Run Trivy container scan against node fixture
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest \
+            image \
+              --scanners vuln \
+              --severity "CRITICAL,HIGH" \
+              --ignore-unfixed \
+              --exit-code 1 \
+              secureflow-node-fixture:local
