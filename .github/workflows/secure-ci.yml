@@ -1,0 +1,190 @@
+name: SecureFlow CI
+
+on:
+  workflow_call:
+    inputs:
+      fail_on_severity:
+        description: "Minimum severity that should fail the pipeline"
+        required: false
+        type: string
+        default: "critical"
+
+      enable_sast:
+        description: "Enable SAST scan"
+        required: false
+        type: boolean
+        default: true
+
+      enable_secrets:
+        description: "Enable secrets scanning"
+        required: false
+        type: boolean
+        default: true
+
+      enable_dependencies:
+        description: "Enable dependency scanning"
+        required: false
+        type: boolean
+        default: true
+
+      enable_container:
+        description: "Enable container scanning when Dockerfile exists"
+        required: false
+        type: boolean
+        default: true
+
+      enable_iac:
+        description: "Enable IaC scanning when IaC files exist"
+        required: false
+        type: boolean
+        default: true
+
+    outputs:
+      language:
+        description: "Detected primary language"
+        value: ${{ jobs.detect-stack.outputs.language }}
+
+      package_manager:
+        description: "Detected package manager"
+        value: ${{ jobs.detect-stack.outputs.package_manager }}
+
+      framework:
+        description: "Detected framework"
+        value: ${{ jobs.detect-stack.outputs.framework }}
+
+      has_dockerfile:
+        description: "Whether the repository has a Dockerfile"
+        value: ${{ jobs.detect-stack.outputs.has_dockerfile }}
+
+      has_iac:
+        description: "Whether the repository has IaC files"
+        value: ${{ jobs.detect-stack.outputs.has_iac }}
+
+      has_tests:
+        description: "Whether the repository has tests"
+        value: ${{ jobs.detect-stack.outputs.has_tests }}
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  detect-stack:
+    name: Detect Stack
+    runs-on: ubuntu-latest
+
+    outputs:
+      language: ${{ steps.detect.outputs.language }}
+      package_manager: ${{ steps.detect.outputs.package_manager }}
+      framework: ${{ steps.detect.outputs.framework }}
+      has_dockerfile: ${{ steps.detect.outputs.has_dockerfile }}
+      has_iac: ${{ steps.detect.outputs.has_iac }}
+      has_tests: ${{ steps.detect.outputs.has_tests }}
+
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+
+      - name: Detect project stack
+        id: detect
+        uses: thebinario/secureflow-devsecops/actions/detect-stack@main
+
+      - name: Print detected stack
+        shell: bash
+        run: |
+          echo "Language: ${{ steps.detect.outputs.language }}"
+          echo "Package manager: ${{ steps.detect.outputs.package_manager }}"
+          echo "Framework: ${{ steps.detect.outputs.framework }}"
+          echo "Has Dockerfile: ${{ steps.detect.outputs.has_dockerfile }}"
+          echo "Has IaC: ${{ steps.detect.outputs.has_iac }}"
+          echo "Has tests: ${{ steps.detect.outputs.has_tests }}"
+
+  security-plan:
+    name: Security Plan
+    runs-on: ubuntu-latest
+    needs: detect-stack
+
+    steps:
+      - name: Generate security plan
+        shell: bash
+        run: |
+          echo "SecureFlow security plan"
+          echo "------------------------"
+          echo "Detected language: ${{ needs.detect-stack.outputs.language }}"
+          echo "Detected package manager: ${{ needs.detect-stack.outputs.package_manager }}"
+          echo "Detected framework: ${{ needs.detect-stack.outputs.framework }}"
+          echo "Fail on severity: ${{ inputs.fail_on_severity }}"
+          echo ""
+          echo "Enabled checks:"
+          echo "SAST: ${{ inputs.enable_sast }}"
+          echo "Secrets: ${{ inputs.enable_secrets }}"
+          echo "Dependencies: ${{ inputs.enable_dependencies }}"
+          echo "Container: ${{ inputs.enable_container }}"
+          echo "IaC: ${{ inputs.enable_iac }}"
+          echo ""
+          echo "Conditional checks:"
+          echo "Container scan will run: ${{ inputs.enable_container && needs.detect-stack.outputs.has_dockerfile == 'true' }}"
+          echo "IaC scan will run: ${{ inputs.enable_iac && needs.detect-stack.outputs.has_iac == 'true' }}"
+
+  sast-placeholder:
+    name: SAST Placeholder
+    runs-on: ubuntu-latest
+    needs: detect-stack
+    if: ${{ inputs.enable_sast }}
+
+    steps:
+      - name: SAST placeholder
+        shell: bash
+        run: |
+          echo "SAST will be implemented in the next task."
+          echo "Language: ${{ needs.detect-stack.outputs.language }}"
+
+  secrets-placeholder:
+    name: Secrets Placeholder
+    runs-on: ubuntu-latest
+    needs: detect-stack
+    if: ${{ inputs.enable_secrets }}
+
+    steps:
+      - name: Secrets scan placeholder
+        shell: bash
+        run: |
+          echo "Secrets scanning will be implemented in a future task."
+
+  dependency-placeholder:
+    name: Dependency Scan Placeholder
+    runs-on: ubuntu-latest
+    needs: detect-stack
+    if: ${{ inputs.enable_dependencies }}
+
+    steps:
+      - name: Dependency scan placeholder
+        shell: bash
+        run: |
+          echo "Dependency scanning will be implemented in a future task."
+          echo "Package manager: ${{ needs.detect-stack.outputs.package_manager }}"
+
+  container-placeholder:
+    name: Container Scan Placeholder
+    runs-on: ubuntu-latest
+    needs: detect-stack
+    if: ${{ inputs.enable_container && needs.detect-stack.outputs.has_dockerfile == 'true' }}
+
+    steps:
+      - name: Container scan placeholder
+        shell: bash
+        run: |
+          echo "Container scanning will be implemented in a future task."
+
+  iac-placeholder:
+    name: IaC Scan Placeholder
+    runs-on: ubuntu-latest
+    needs: detect-stack
+    if: ${{ inputs.enable_iac && needs.detect-stack.outputs.has_iac == 'true' }}
+
+    steps:
+      - name: IaC scan placeholder
+        shell: bash
+        run: |
+          echo "IaC scanning will be implemented in a future task."
