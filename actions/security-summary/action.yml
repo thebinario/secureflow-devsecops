@@ -1,0 +1,85 @@
+name: "Security Summary"
+description: "Generates a SecureFlow security summary for GitHub Actions"
+
+inputs:
+  language:
+    description: "Detected primary language"
+    required: false
+    default: "unknown"
+
+  package_manager:
+    description: "Detected package manager"
+    required: false
+    default: "unknown"
+
+  framework:
+    description: "Detected framework"
+    required: false
+    default: "unknown"
+
+  has_dockerfile:
+    description: "Whether the repository has a Dockerfile"
+    required: false
+    default: "false"
+
+  has_iac:
+    description: "Whether the repository has IaC files"
+    required: false
+    default: "false"
+
+  has_tests:
+    description: "Whether the repository has tests"
+    required: false
+    default: "false"
+
+  enable_sast:
+    description: "Whether SAST is enabled"
+    required: false
+    default: "false"
+
+  enable_secrets:
+    description: "Whether secrets scanning is enabled"
+    required: false
+    default: "false"
+
+  enable_dependencies:
+    description: "Whether dependency scanning is enabled"
+    required: false
+    default: "false"
+
+  enable_container:
+    description: "Whether container scanning is enabled"
+    required: false
+    default: "false"
+
+  enable_iac:
+    description: "Whether IaC scanning is enabled"
+    required: false
+    default: "false"
+
+  fail_on_severity:
+    description: "Configured severity gate"
+    required: false
+    default: "critical"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate security summary
+      shell: bash
+      env:
+        LANGUAGE: ${{ inputs.language }}
+        PACKAGE_MANAGER: ${{ inputs.package_manager }}
+        FRAMEWORK: ${{ inputs.framework }}
+        HAS_DOCKERFILE: ${{ inputs.has_dockerfile }}
+        HAS_IAC: ${{ inputs.has_iac }}
+        HAS_TESTS: ${{ inputs.has_tests }}
+        ENABLE_SAST: ${{ inputs.enable_sast }}
+        ENABLE_SECRETS: ${{ inputs.enable_secrets }}
+        ENABLE_DEPENDENCIES: ${{ inputs.enable_dependencies }}
+        ENABLE_CONTAINER: ${{ inputs.enable_container }}
+        ENABLE_IAC: ${{ inputs.enable_iac }}
+        FAIL_ON_SEVERITY: ${{ inputs.fail_on_severity }}
+      run: |
+        chmod +x "${{ github.action_path }}/../../scripts/security-summary.sh"
+        "${{ github.action_path }}/../../scripts/security-summary.sh"

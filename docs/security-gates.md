@@ -123,3 +123,20 @@ jobs:
       trivy_iac_severity: "CRITICAL,HIGH"
       trivy_iac_exit_code: "1"
 ```
+
+## Security summary
+
+SecureFlow generates a GitHub Actions job summary at the end of the pipeline.
+
+The summary includes:
+
+- Detected language
+- Detected package manager
+- Detected framework
+- Dockerfile detection
+- IaC detection
+- Enabled security checks
+- Generated reports
+- Security gate configuration
+
+The summary is written using `GITHUB_STEP_SUMMARY`.

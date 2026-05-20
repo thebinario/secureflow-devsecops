@@ -385,3 +385,38 @@ jobs:
         with:
           sarif_file: trivy-iac-results.sarif
           category: trivy-iac
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs:
+      - detect-stack
+      - sast
+      - secrets
+      - dependency-scan
+      - container-scan
+      - iac-scan
+    if: always()
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+
+      - name: Generate SecureFlow security summary
+        uses: thebinario/secureflow-devsecops/actions/security-summary@main
+        with:
+          language: ${{ needs.detect-stack.outputs.language }}
+          package_manager: ${{ needs.detect-stack.outputs.package_manager }}
+          framework: ${{ needs.detect-stack.outputs.framework }}
+          has_dockerfile: ${{ needs.detect-stack.outputs.has_dockerfile }}
+          has_iac: ${{ needs.detect-stack.outputs.has_iac }}
+          has_tests: ${{ needs.detect-stack.outputs.has_tests }}
+          enable_sast: ${{ inputs.enable_sast }}
+          enable_secrets: ${{ inputs.enable_secrets }}
+          enable_dependencies: ${{ inputs.enable_dependencies }}
+          enable_container: ${{ inputs.enable_container }}
+          enable_iac: ${{ inputs.enable_iac }}
+          fail_on_severity: ${{ inputs.fail_on_severity }}
