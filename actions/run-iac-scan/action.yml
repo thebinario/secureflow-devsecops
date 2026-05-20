@@ -7,6 +7,11 @@ inputs:
     required: false
     default: "."
 
+  skip_dirs:
+    description: "Comma-separated directories to exclude from IaC scanning"
+    required: false
+    default: ""
+
   severity:
     description: "Comma-separated misconfiguration severities"
     required: false
@@ -43,9 +48,22 @@ runs:
 
         echo "Running Trivy IaC scan..."
         echo "Scan path: ${{ inputs.scan_path }}"
+        echo "Skip dirs: ${{ inputs.skip_dirs }}"
         echo "Severity: ${{ inputs.severity }}"
         echo "Report format: ${{ inputs.report_format }}"
         echo "Report path: ${{ inputs.report_path }}"
+
+        SKIP_ARGS=()
+
+        if [ -n "${{ inputs.skip_dirs }}" ]; then
+          IFS=',' read -ra RAW_SKIP_DIRS <<< "${{ inputs.skip_dirs }}"
+          for raw_dir in "${RAW_SKIP_DIRS[@]}"; do
+            dir="$(echo "$raw_dir" | xargs)"
+            if [ -n "$dir" ]; then
+              SKIP_ARGS+=("--skip-dirs" "/src/$dir")
+            fi
+          done
+        fi
 
         docker run --rm \
           -v "${PWD}:/src" \
@@ -57,6 +75,7 @@ runs:
             --exit-code "${{ inputs.exit_code }}" \
             --format "${{ inputs.report_format }}" \
             --output "${{ inputs.report_path }}" \
+            "${SKIP_ARGS[@]}" \
             "/src/${{ inputs.scan_path }}"
 
         echo "report_file=${{ inputs.report_path }}" >> "$GITHUB_OUTPUT"

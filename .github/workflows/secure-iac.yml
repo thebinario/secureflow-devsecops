@@ -22,3 +22,4 @@ jobs:
       enable_container: false
       enable_iac: true
       iac_scan_path: .
+      trivy_iac_skip_dirs: examples/fixtures

@@ -135,6 +135,12 @@ on:
         type: string
         default: "CRITICAL,HIGH"
 
+      trivy_iac_skip_dirs:
+        description: "Comma-separated directories to exclude from Trivy IaC scanning"
+        required: false
+        type: string
+        default: ""
+
       trivy_iac_exit_code:
         description: "Exit code when Trivy finds IaC misconfigurations"
         required: false
@@ -385,6 +391,7 @@ jobs:
         uses: thebinario/secureflow-devsecops/actions/run-iac-scan@master
         with:
           scan_path: ${{ inputs.iac_scan_path }}
+          skip_dirs: ${{ inputs.trivy_iac_skip_dirs }}
           severity: ${{ inputs.trivy_iac_severity }}
           exit_code: ${{ inputs.trivy_iac_exit_code }}
           report_format: "sarif"
