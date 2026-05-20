@@ -30,4 +30,4 @@ The workflows under `examples/fixtures/workflows/` now show how to call SecureFl
 
 Runnable workflow entrypoints live under `.github/workflows/` in this repository and mirror these examples for `workflow_dispatch` testing.
 
-Those validation workflows are configured so expected findings in the insecure fixtures do not fail the entire run.
+Those validation workflows are configured to fail when the insecure fixtures trigger findings so the gate behavior can be verified directly.

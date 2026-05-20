@@ -15,11 +15,8 @@ jobs:
       working_directory: examples/fixtures/python-vulnerable-app
       enable_sast: true
       enable_secrets: true
-      gitleaks_exit_code: "0"
       enable_dependencies: true
-      trivy_dependency_exit_code: "0"
       enable_container: true
-      trivy_container_exit_code: "0"
       enable_iac: false
       container_image_name: secureflow-python-fixture
       container_image_tag: fixture-${{ github.sha }}

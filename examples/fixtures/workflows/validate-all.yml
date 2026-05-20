@@ -15,11 +15,8 @@ jobs:
       working_directory: examples/fixtures/node-vulnerable-app
       enable_sast: true
       enable_secrets: true
-      gitleaks_exit_code: "0"
       enable_dependencies: true
-      trivy_dependency_exit_code: "0"
       enable_container: true
-      trivy_container_exit_code: "0"
       enable_iac: false
       container_image_name: secureflow-node-fixture
       container_image_tag: fixture-${{ github.sha }}
@@ -30,11 +27,8 @@ jobs:
       working_directory: examples/fixtures/python-vulnerable-app
       enable_sast: true
       enable_secrets: true
-      gitleaks_exit_code: "0"
       enable_dependencies: true
-      trivy_dependency_exit_code: "0"
       enable_container: true
-      trivy_container_exit_code: "0"
       enable_iac: false
       container_image_name: secureflow-python-fixture
       container_image_tag: fixture-${{ github.sha }}
@@ -49,7 +43,6 @@ jobs:
       enable_container: false
       enable_iac: true
       iac_scan_path: .
-      trivy_iac_exit_code: "0"
 
   validate-container-labs:
     runs-on: ubuntu-latest
@@ -60,14 +53,45 @@ jobs:
           docker pull webgoat/webgoat-8.0:latest
           docker pull vulnerables/web-dvwa:latest
 
-      - name: Scan community vulnerable images
+      - name: Scan Juice Shop image
+        id: juice_shop
+        continue-on-error: true
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image --severity "CRITICAL,HIGH" bkimminich/juice-shop:latest
+            aquasec/trivy:latest image --severity "CRITICAL,HIGH" --exit-code 1 bkimminich/juice-shop:latest
+
+      - name: Scan WebGoat image
+        id: webgoat
+        continue-on-error: true
+        run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image --severity "CRITICAL,HIGH" webgoat/webgoat-8.0:latest
+            aquasec/trivy:latest image --severity "CRITICAL,HIGH" --exit-code 1 webgoat/webgoat-8.0:latest
+
+      - name: Scan DVWA image
+        id: dvwa
+        continue-on-error: true
+        run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image --severity "CRITICAL,HIGH" vulnerables/web-dvwa:latest
+            aquasec/trivy:latest image --severity "CRITICAL,HIGH" --exit-code 1 vulnerables/web-dvwa:latest
+
+      - name: Fail if vulnerable lab images triggered findings
+        if: always()
+        run: |
+          echo "Juice Shop result: ${{ steps.juice_shop.outcome }}"
+          echo "WebGoat result: ${{ steps.webgoat.outcome }}"
+          echo "DVWA result: ${{ steps.dvwa.outcome }}"
+
+          failed=0
+          for result in "${{ steps.juice_shop.outcome }}" "${{ steps.webgoat.outcome }}" "${{ steps.dvwa.outcome }}"; do
+            if [ "$result" = "failure" ]; then
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -eq 1 ]; then
+            echo "Security gate blocked the workflow because one or more vulnerable lab images triggered Trivy findings."
+            exit 1
+          fi

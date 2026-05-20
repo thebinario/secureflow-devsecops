@@ -73,6 +73,15 @@ report_status() {
   fi
 }
 
+failure_reason() {
+  local label="$1"
+  local result="$2"
+
+  if [ "$result" = "failure" ]; then
+    echo "- ${label} blocked the pipeline because findings matched the configured gate."
+  fi
+}
+
 {
   echo "# SecureFlow DevSecOps Summary"
   echo ""
@@ -112,6 +121,17 @@ report_status() {
   echo "| Trivy Dependencies | \`${TRIVY_DEPENDENCY_REPORT}\` | $(report_status "$TRIVY_DEPENDENCY_REPORT") |"
   echo "| Trivy Container | \`${TRIVY_CONTAINER_REPORT}\` | $(report_status "$TRIVY_CONTAINER_REPORT") |"
   echo "| Trivy IaC | \`${TRIVY_IAC_REPORT}\` | $(report_status "$TRIVY_IAC_REPORT") |"
+  echo ""
+  echo "## Blocking Reasons"
+  echo ""
+  failure_reason "SAST" "$SAST_RESULT"
+  failure_reason "Secrets scan" "$SECRETS_RESULT"
+  failure_reason "Dependency scan" "$DEPENDENCY_RESULT"
+  failure_reason "Container scan" "$CONTAINER_RESULT"
+  failure_reason "IaC scan" "$IAC_RESULT"
+  if [ "$SAST_RESULT" != "failure" ] && [ "$SECRETS_RESULT" != "failure" ] && [ "$DEPENDENCY_RESULT" != "failure" ] && [ "$CONTAINER_RESULT" != "failure" ] && [ "$IAC_RESULT" != "failure" ]; then
+    echo "- No blocking security gates were triggered."
+  fi
   echo ""
   echo "## Notes"
   echo ""

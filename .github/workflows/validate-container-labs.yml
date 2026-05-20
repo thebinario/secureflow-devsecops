@@ -24,6 +24,8 @@ jobs:
           docker pull vulnerables/web-dvwa:latest
 
       - name: Scan Juice Shop image
+        id: juice_shop
+        continue-on-error: true
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
@@ -31,9 +33,12 @@ jobs:
             image \
               --scanners vuln \
               --severity "CRITICAL,HIGH" \
+              --exit-code 1 \
               bkimminich/juice-shop:latest
 
       - name: Scan WebGoat image
+        id: webgoat
+        continue-on-error: true
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
@@ -41,9 +46,12 @@ jobs:
             image \
               --scanners vuln \
               --severity "CRITICAL,HIGH" \
+              --exit-code 1 \
               webgoat/webgoat-8.0:latest
 
       - name: Scan DVWA image
+        id: dvwa
+        continue-on-error: true
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
@@ -51,4 +59,24 @@ jobs:
             image \
               --scanners vuln \
               --severity "CRITICAL,HIGH" \
+              --exit-code 1 \
               vulnerables/web-dvwa:latest
+
+      - name: Fail if vulnerable lab images triggered findings
+        if: always()
+        run: |
+          echo "Juice Shop result: ${{ steps.juice_shop.outcome }}"
+          echo "WebGoat result: ${{ steps.webgoat.outcome }}"
+          echo "DVWA result: ${{ steps.dvwa.outcome }}"
+
+          failed=0
+          for result in "${{ steps.juice_shop.outcome }}" "${{ steps.webgoat.outcome }}" "${{ steps.dvwa.outcome }}"; do
+            if [ "$result" = "failure" ]; then
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -eq 1 ]; then
+            echo "Security gate blocked the workflow because one or more vulnerable lab images triggered Trivy findings."
+            exit 1
+          fi
