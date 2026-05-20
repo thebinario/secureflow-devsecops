@@ -190,7 +190,7 @@ jobs:
 
       - name: Detect project stack
         id: detect
-        uses: thebinario/secureflow-devsecops/actions/detect-stack@main
+        uses: thebinario/secureflow-devsecops/actions/detect-stack@master
 
       - name: Print detected stack
         shell: bash
@@ -248,7 +248,7 @@ jobs:
 
       - name: Run SAST with Semgrep
         id: sast
-        uses: thebinario/secureflow-devsecops/actions/run-sast@main
+        uses: thebinario/secureflow-devsecops/actions/run-sast@master
         with:
           config: ${{ inputs.semgrep_config }}
           severity: ${{ inputs.semgrep_severity }}
@@ -287,7 +287,7 @@ jobs:
 
       - name: Run secrets scan with Gitleaks
         id: secrets
-        uses: thebinario/secureflow-devsecops/actions/run-secrets-scan@main
+        uses: thebinario/secureflow-devsecops/actions/run-secrets-scan@master
         with:
           report_format: "sarif"
           report_path: "gitleaks-results.sarif"
@@ -316,7 +316,7 @@ jobs:
 
       - name: Run dependency scan with Trivy
         id: dependency-scan
-        uses: thebinario/secureflow-devsecops/actions/run-dependency-scan@main
+        uses: thebinario/secureflow-devsecops/actions/run-dependency-scan@master
         with:
           severity: ${{ inputs.trivy_dependency_severity }}
           ignore_unfixed: ${{ inputs.trivy_dependency_ignore_unfixed }}
@@ -347,7 +347,7 @@ jobs:
 
       - name: Run container scan with Trivy
         id: container-scan
-        uses: thebinario/secureflow-devsecops/actions/run-container-scan@main
+        uses: thebinario/secureflow-devsecops/actions/run-container-scan@master
         with:
           image_name: ${{ inputs.container_image_name }}
           image_tag: ${{ inputs.container_image_tag }}
@@ -382,7 +382,7 @@ jobs:
 
       - name: Run IaC scan with Trivy
         id: iac-scan
-        uses: thebinario/secureflow-devsecops/actions/run-iac-scan@main
+        uses: thebinario/secureflow-devsecops/actions/run-iac-scan@master
         with:
           scan_path: ${{ inputs.iac_scan_path }}
           severity: ${{ inputs.trivy_iac_severity }}
@@ -451,7 +451,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate SecureFlow security summary
-        uses: thebinario/secureflow-devsecops/actions/security-summary@main
+        uses: thebinario/secureflow-devsecops/actions/security-summary@master
         with:
           language: ${{ needs.detect-stack.outputs.language }}
           package_manager: ${{ needs.detect-stack.outputs.package_manager }}

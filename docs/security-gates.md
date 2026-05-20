@@ -50,7 +50,7 @@ Example:
 ```yaml
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
     with:
       enable_dependencies: true
       trivy_dependency_severity: "CRITICAL,HIGH"
@@ -78,7 +78,7 @@ Example:
 ```yaml
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
     with:
       enable_container: true
       container_image_name: "my-api"
@@ -116,7 +116,7 @@ Example:
 ```yaml
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
     with:
       enable_iac: true
       iac_scan_path: "."
@@ -170,7 +170,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: read
@@ -179,7 +179,7 @@ permissions:
 
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
     with:
       enable_sast: true
       enable_secrets: true

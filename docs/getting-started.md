@@ -13,7 +13,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - master
       - develop
 
 permissions:
@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   secure-ci:
-    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@main
+    uses: thebinario/secureflow-devsecops/.github/workflows/secure-ci.yml@master
     with:
       fail_on_severity: critical
       enable_sast: true
