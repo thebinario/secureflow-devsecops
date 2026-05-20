@@ -62,6 +62,31 @@ inputs:
     required: false
     default: "critical"
 
+  sast_result:
+    description: "SAST job result"
+    required: false
+    default: "skipped"
+
+  secrets_result:
+    description: "Secrets scan job result"
+    required: false
+    default: "skipped"
+
+  dependency_result:
+    description: "Dependency scan job result"
+    required: false
+    default: "skipped"
+
+  container_result:
+    description: "Container scan job result"
+    required: false
+    default: "skipped"
+
+  iac_result:
+    description: "IaC scan job result"
+    required: false
+    default: "skipped"
+
 runs:
   using: "composite"
   steps:
@@ -80,6 +105,11 @@ runs:
         ENABLE_CONTAINER: ${{ inputs.enable_container }}
         ENABLE_IAC: ${{ inputs.enable_iac }}
         FAIL_ON_SEVERITY: ${{ inputs.fail_on_severity }}
+        SAST_RESULT: ${{ inputs.sast_result }}
+        SECRETS_RESULT: ${{ inputs.secrets_result }}
+        DEPENDENCY_RESULT: ${{ inputs.dependency_result }}
+        CONTAINER_RESULT: ${{ inputs.container_result }}
+        IAC_RESULT: ${{ inputs.iac_result }}
       run: |
         chmod +x "${{ github.action_path }}/../../scripts/security-summary.sh"
         "${{ github.action_path }}/../../scripts/security-summary.sh"

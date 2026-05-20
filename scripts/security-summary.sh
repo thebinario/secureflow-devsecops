@@ -9,6 +9,12 @@ HAS_DOCKERFILE="${HAS_DOCKERFILE:-false}"
 HAS_IAC="${HAS_IAC:-false}"
 HAS_TESTS="${HAS_TESTS:-false}"
 
+SAST_RESULT="${SAST_RESULT:-skipped}"
+SECRETS_RESULT="${SECRETS_RESULT:-skipped}"
+DEPENDENCY_RESULT="${DEPENDENCY_RESULT:-skipped}"
+CONTAINER_RESULT="${CONTAINER_RESULT:-skipped}"
+IAC_RESULT="${IAC_RESULT:-skipped}"
+
 ENABLE_SAST="${ENABLE_SAST:-false}"
 ENABLE_SECRETS="${ENABLE_SECRETS:-false}"
 ENABLE_DEPENDENCIES="${ENABLE_DEPENDENCIES:-false}"
@@ -33,6 +39,28 @@ status_icon() {
   else
     echo "⏭️ Disabled"
   fi
+}
+
+job_result_icon() {
+  local result="$1"
+
+  case "$result" in
+    success)
+      echo "✅ success"
+      ;;
+    failure)
+      echo "❌ failure"
+      ;;
+    cancelled)
+      echo "🚫 cancelled"
+      ;;
+    skipped)
+      echo "⏭️ skipped"
+      ;;
+    *)
+      echo "❔ ${result}"
+      ;;
+  esac
 }
 
 report_status() {
@@ -61,13 +89,13 @@ report_status() {
   echo ""
   echo "## Security Checks"
   echo ""
-  echo "| Check | Status | Report |"
-  echo "|---|---|---|"
-  echo "| SAST | $(status_icon "$ENABLE_SAST") | $(report_status "$SEMGREP_REPORT") |"
-  echo "| Secrets scan | $(status_icon "$ENABLE_SECRETS") | $(report_status "$GITLEAKS_REPORT") |"
-  echo "| Dependency scan | $(status_icon "$ENABLE_DEPENDENCIES") | $(report_status "$TRIVY_DEPENDENCY_REPORT") |"
-  echo "| Container scan | $(status_icon "$ENABLE_CONTAINER") | $(report_status "$TRIVY_CONTAINER_REPORT") |"
-  echo "| IaC scan | $(status_icon "$ENABLE_IAC") | $(report_status "$TRIVY_IAC_REPORT") |"
+  echo "| Check | Enabled | Job result | Report |"
+  echo "|---|---|---|---|"
+  echo "| SAST | $(status_icon "$ENABLE_SAST") | $(job_result_icon "$SAST_RESULT") | $(report_status "$SEMGREP_REPORT") |"
+  echo "| Secrets scan | $(status_icon "$ENABLE_SECRETS") | $(job_result_icon "$SECRETS_RESULT") | $(report_status "$GITLEAKS_REPORT") |"
+  echo "| Dependency scan | $(status_icon "$ENABLE_DEPENDENCIES") | $(job_result_icon "$DEPENDENCY_RESULT") | $(report_status "$TRIVY_DEPENDENCY_REPORT") |"
+  echo "| Container scan | $(status_icon "$ENABLE_CONTAINER") | $(job_result_icon "$CONTAINER_RESULT") | $(report_status "$TRIVY_CONTAINER_REPORT") |"
+  echo "| IaC scan | $(status_icon "$ENABLE_IAC") | $(job_result_icon "$IAC_RESULT") | $(report_status "$TRIVY_IAC_REPORT") |"
   echo ""
   echo "## Security Gate"
   echo ""

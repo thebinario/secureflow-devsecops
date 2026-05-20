@@ -239,6 +239,9 @@ jobs:
       contents: read
       security-events: write
 
+    outputs:
+      result: ${{ steps.status.outputs.result }}
+
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v4
@@ -257,6 +260,14 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep-results.sarif
+          category: semgrep-sast
+
+      - name: Set SAST status
+        id: status
+        if: always()
+        shell: bash
+        run: |
+          echo "result=${{ job.status }}" >> "$GITHUB_OUTPUT"
 
   secrets:
     name: Secrets Scan
@@ -385,9 +396,8 @@ jobs:
         with:
           sarif_file: trivy-iac-results.sarif
           category: trivy-iac
-
-  security-summary:
-    name: Security Summary
+  security-status:
+    name: Security Status
     runs-on: ubuntu-latest
     needs:
       - detect-stack
@@ -396,6 +406,41 @@ jobs:
       - dependency-scan
       - container-scan
       - iac-scan
+    if: always()
+
+    permissions:
+      contents: read
+
+    outputs:
+      sast_result: ${{ steps.status.outputs.sast_result }}
+      secrets_result: ${{ steps.status.outputs.secrets_result }}
+      dependency_result: ${{ steps.status.outputs.dependency_result }}
+      container_result: ${{ steps.status.outputs.container_result }}
+      iac_result: ${{ steps.status.outputs.iac_result }}
+
+    steps:
+      - name: Collect security job status
+        id: status
+        shell: bash
+        run: |
+          echo "sast_result=${{ needs.sast.result }}" >> "$GITHUB_OUTPUT"
+          echo "secrets_result=${{ needs.secrets.result }}" >> "$GITHUB_OUTPUT"
+          echo "dependency_result=${{ needs.dependency-scan.result }}" >> "$GITHUB_OUTPUT"
+          echo "container_result=${{ needs.container-scan.result }}" >> "$GITHUB_OUTPUT"
+          echo "iac_result=${{ needs.iac-scan.result }}" >> "$GITHUB_OUTPUT"
+
+          echo "SAST: ${{ needs.sast.result }}"
+          echo "Secrets: ${{ needs.secrets.result }}"
+          echo "Dependencies: ${{ needs.dependency-scan.result }}"
+          echo "Container: ${{ needs.container-scan.result }}"
+          echo "IaC: ${{ needs.iac-scan.result }}"
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs:
+    - detect-stack
+    - security-status
     if: always()
 
     permissions:
@@ -420,3 +465,8 @@ jobs:
           enable_container: ${{ inputs.enable_container }}
           enable_iac: ${{ inputs.enable_iac }}
           fail_on_severity: ${{ inputs.fail_on_severity }}
+          sast_result: ${{ needs.security-status.outputs.sast_result }}
+          secrets_result: ${{ needs.security-status.outputs.secrets_result }}
+          dependency_result: ${{ needs.security-status.outputs.dependency_result }}
+          container_result: ${{ needs.security-status.outputs.container_result }}
+          iac_result: ${{ needs.security-status.outputs.iac_result }}
